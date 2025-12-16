@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>地圖任務標示系統</title>
+
+<style>
+  :root { color-scheme: dark; }
+  body {
+    margin: 0;
+    background:#111;
+    color:#fff;
+    font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans TC", sans-serif;
+  }
+
+  header {
+    position: sticky;
+    top: 0;
+    background: rgba(17,17,17,.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    padding: 12px 14px;
+    z-index: 10;
+  }
+
+  h1 {
+    margin: 0 0 10px 0;
+    font-size: 18px;
+    font-weight: 650;
+  }
+
+  .row {
+    display:flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+
+  select, input[type="text"], button {
+    background:#1b1b1b;
+    color:#fff;
+    border:1px solid rgba(255,255,255,.14);
+    border-radius: 10px;
+    padding: 8px 10px;
+    font-size: 14px;
+    outline: none;
+  }
+
+  input[type="text"] { width: 220px; }
+  button { cursor:pointer; }
+
+  button.primary { border-color: rgba(130,200,255,.6); }
+  button.danger  { border-color: rgba(255,120,120,.6); }
+
+  button.active {
+    border-color: rgba(120,255,180,.7);
+    box-shadow: 0 0 0 2px rgba(120,255,180,.15) inset;
+  }
+
+  .hint {
+    margin-top: 10px;
+    font-size: 12px;
+    color: rgba(255,255,255,.72);
+    line-height: 1.45;
+  }
+
+  .hint-strong { color: #fbbf24; font-weight: 650; }
+  .hint-info   { color: #7dd3fc; }
+  .hint-title  { color: #a7f3d0; font-weight: 650; }
+  .hint-warning{ color: #fb7185; font-weight: 650; }
+
+  .hint-line { margin: 4px 0; }
+  .hint-details {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,.10);
+  }
+  .hint-details summary {
+    cursor: pointer;
+    color: rgba(255,255,255,.85);
+    font-weight: 650;
+    list-style: none;
+    user-select: none;
+  }
+  .hint-details summary::-webkit-details-marker { display: none; }
+  .hint-block { margin-top: 10px; }
+  .hint-subtitle { font-weight: 650; color: rgba(255,255,255,.90); margin-bottom: 4px; }
+  .hint-text { color: rgba(255,255,255,.75); }
+  .hint-list { margin: 6px 0 0 18px; padding: 0; }
+  .hint-list li { margin: 4px 0; }
+
+  main { padding: 14px; }
+
+  #mapWrap {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    justify-content: center;
+  }
+
+  #legend {
+    width: 260px;
+    max-width: 45vw;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 14px;
+    padding: 10px;
+    position: sticky;
+    top: 92px;
+  }
+
+  .legend-title {
+    font-size: 13px;
+    font-weight: 700;
+    margin: 2px 0 10px 0;
+    color: rgba(255,255,255,.90);
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 8px;
+    border-radius: 12px;
+  }
+  .legend-item:hover { background: rgba(255,255,255,.05); }
+
+  .legend-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    flex: 0 0 auto;
+  }
+
+  .legend-text { font-size: 13px; color: rgba(255,255,255,.82); line-height: 1.2; }
+  .legend-state { font-size: 12px; color: rgba(255,255,255,.55); margin-left: auto; }
+
+  .panel-sep { margin: 10px 0; border-top: 1px solid rgba(255,255,255,.10); }
+
+  .stats-title {
+    font-size: 13px;
+    font-weight: 700;
+    margin: 10px 0 8px 0;
+    color: rgba(255,255,255,.90);
+  }
+
+  .stats-row {
+    display:flex;
+    align-items:center;
+    gap: 8px;
+    padding: 7px 8px;
+    border-radius: 12px;
+  }
+  .stats-row:hover { background: rgba(255,255,255,.05); }
+
+  .stats-name {
+    font-size: 13px;
+    color: rgba(255,255,255,.86);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1 1 auto;
+  }
+
+  .stats-counts {
+    display:flex;
+    gap: 10px;
+    flex: 0 0 auto;
+    font-size: 12px;
+    color: rgba(255,255,255,.68);
+  }
+
+  .pill {
+    display:inline-flex;
+    align-items:center;
+    gap: 6px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,.12);
+    background: rgba(0,0,0,.12);
+  }
+  .pill img { width: 14px; height: 14px; border-radius: 4px; }
+
+  .fail-title {
+    font-size: 13px;
+    font-weight: 700;
+    margin: 10px 0 8px 0;
+    color: rgba(255,255,255,.90);
+  }
+  .fail-item {
+    font-size: 12px;
+    color: rgba(255,255,255,.72);
+    padding: 6px 8px;
+    border-radius: 12px;
+    border: 1px dashed rgba(255,120,120,.35);
+    background: rgba(255,120,120,.06);
+    margin: 6px 0;
+    line-height: 1.35;
+  }
+  .fail-empty { font-size: 12px; color: rgba(255,255,255,.55); padding: 6px 8px; }
+
+  #mapContainer {
+    position: relative;
+    display: inline-block;
+    margin: 8px auto 18px auto;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0,0,0,.35);
+    border: 1px solid rgba(255,255,255,.08);
+    max-width: min(1200px, 96vw);
+  }
+
+  #mapImg { display:block; width: 100%; height: auto; }
+
+  .marker {
+    position:absolute;
+    width: 30px;
+    height: 30px;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    user-select: none;
+  }
+  .marker:hover { filter: drop-shadow(0 0 6px rgba(255,255,255,.25)); }
+
+  .badge {
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding: 6px 10px;
+    border:1px dashed rgba(255,255,255,.18);
+    border-radius: 999px;
+    font-size: 12px;
+    color: rgba(255,255,255,.8);
+  }
+  .badge b { color: rgba(255,255,255,.95); }
+
+  @media (max-width: 920px) {
+    #mapWrap { flex-direction: column; align-items: center; }
+    #legend { width: min(640px, 96vw); position: relative; top: 0; }
+  }
+  /* ✅ 小螢幕：上下排列、字變大、按鈕更好點（手機最舒服） */
+@media (max-width: 920px) {
+  header { padding: 10px 10px; }
+  h1 { font-size: 16px; }
+
+  .row { gap: 8px; }
+  select, input[type="text"], button {
+    font-size: 15px;
+    padding: 10px 12px;
+    border-radius: 12px;
+  }
+  input[type="text"] { width: min(260px, 70vw); }
+
+  #mapWrap { flex-direction: column; align-items: stretch; }
+  #legend { width: auto; max-width: none; position: relative; top: 0; margin-bottom: 10px; }
+
+  .hint { font-size: 13px; line-height: 1.55; }
+  .marker { width: 34px; height: 34px; } /* 手指好點 */
+}
+/* ✅ 地圖不要把畫面吃光（電腦/手機都有效） */
+#mapContainer { max-height: calc(100vh - 240px); }
+#mapImg {
+  max-height: calc(100vh - 240px);
+  object-fit: contain;
+}
+
+</style>
+</head>
+
+<body>
+<header>
+  <h1>📍 魔靈標示輔助器（多地圖 / 點位 4 狀態 / 可新增刪除 / 一鍵重置）</h1>
+
+  <div class="row">
+    <span class="badge">模式：<b id="modeLabel">一般</b></span>
+
+    <label>地圖：
+      <select id="mapSelect"></select>
+    </label>
+
+    <label>名稱：
+      <input id="mapName" type="text" placeholder="地圖名稱" />
+    </label>
+
+    <button class="primary" id="btnAddMarker">➕ 新增點位</button>
+    <button id="btnDeleteMarker" class="danger">🗑️ 刪除點位</button>
+    <button id="btnResetAll">🔄 全部點位重置</button>
+
+    <button class="primary" id="btnAddMap">🖼️ 新增地圖</button>
+    <button class="danger" id="btnDeleteMap">🧨 刪除地圖</button>
+
+    <button id="btnExport">⬇️ 匯出資料</button>
+    <button id="btnImport">⬆️ 導入資料</button>
+    <button class="danger" id="btnClearAll">🧹 清空所有資料</button>
+  </div>
+
+  <div class="hint">
+    <div class="hint-line">
+      <span class="hint-strong">新增魔靈點位前，建議先參考攻略。</span>
+      <span class="hint-info">（本工具自動保存）</span>
+    </div>
+
+    <div class="hint-line">
+      <span class="hint-title">刷新數量</span>：
+      淨界島 8｜冰湖 主城 4 / 郊外 9 / 洞窟&Boss 3｜下水道 7｜廢礦 7｜龍莎要塞 7
+    </div>
+
+    <div class="hint-line hint-warning">
+      達捕捉上限後，同地圖其餘點位可略過。
+    </div>
+
+    <details class="hint-details">
+      <summary>魔靈刷新規則（點開查看）</summary>
+
+      <div class="hint-block">
+        <div class="hint-subtitle">刷新順序</div>
+        <div class="hint-text">
+          3 → 6 → 2 → 5 → 1 → 4 → 7（循環）<br>
+          ※ 此循環指的是禮拜三、六、二、五、一、四、日<br>
+          ※ 刷新「起點」依你的上線日推定：若週二上線，下一次刷新從週五接續。
+        </div>
+      </div>
+
+      <div class="hint-block">
+        <div class="hint-subtitle">72 小時重置</div>
+        <div class="hint-text">
+          無論抓成功/失敗，皆以「刷新後 +72 小時」重置；重置後的魔靈可能會在其他點位出現。
+        </div>
+      </div>
+
+      <div class="hint-block">
+        <div class="hint-subtitle">魔靈出現規則（對照）</div>
+        <div class="hint-text">
+          <ul class="hint-list">
+            <li>第 1 天：成功 → 第 2/3 天不顯示；失敗 → 第 2/3 天持續顯示</li>
+            <li>第 2 天：成功 → 第 3 天不顯示；失敗 → 第 3 天顯示</li>
+            <li>第 3 天：成功/失敗 → 「過點」等刷新</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+  </div>
+</header>
+
+<main>
+  <div id="mapWrap">
+    <aside id="legend" aria-label="點位狀態說明與統計"></aside>
+
+    <div id="mapContainer">
+      <img id="mapImg" alt="map" />
+    </div>
+  </div>
+
+  <input id="fileMap" type="file" accept="image/*" style="display:none" />
+  <input id="fileImport" type="file" accept="application/json,.json" style="display:none" />
+</main>
+
+<script>
+/* =====================
+   ✅ 安全限制（你可調整）
+===================== */
+const IMPORT_MAX_BYTES = 3 * 1024 * 1024;   // 3MB：導入 JSON 檔上限
+const IMPORT_MAX_MARKERS = 5000;            // marker 上限（避免 DOM 爆炸）
+const ALLOW_EXPORT_BASE64_MAPS = false;     // 你選擇：匯出不含 base64
+
+/* =====================
+   狀態圖示 & 文字
+===================== */
+const stateIcons = ["icons/state0.png","icons/state1.png","icons/state2.png","icons/state3.png"];
+const stateLegend = ["還沒看","抓到了","沒魔靈","失敗 / 需再試"];
+const STORAGE_KEY = "mapTaskTool_v4";
+
+/* =====================
+   預設資料
+===================== */
+function createDefaultData() {
+  return {
+    maps: [
+      { id: uid(), name: "地圖 1", src: "maps/map1.png" },
+      { id: uid(), name: "地圖 2", src: "maps/map2.png" },
+      { id: uid(), name: "地圖 3", src: "maps/map3.png" },
+      { id: uid(), name: "地圖 4", src: "maps/map4.png" },
+      { id: uid(), name: "地圖 5", src: "maps/map5.png" },
+      { id: uid(), name: "地圖 6", src: "maps/map6.png" },
+    ],
+    markers: [],
+    currentMapId: null
+  };
+}
+
+let data = createDefaultData();
+let mode = "normal";
+
+/* =====================
+   DOM
+===================== */
+const mapSelect = document.getElementById("mapSelect");
+const mapNameInput = document.getElementById("mapName");
+const mapImg = document.getElementById("mapImg");
+const mapContainer = document.getElementById("mapContainer");
+const modeLabel = document.getElementById("modeLabel");
+const legendEl = document.getElementById("legend");
+
+const btnAddMarker = document.getElementById("btnAddMarker");
+const btnDeleteMarker = document.getElementById("btnDeleteMarker");
+const btnResetAll = document.getElementById("btnResetAll");
+const btnAddMap = document.getElementById("btnAddMap");
+const btnDeleteMap = document.getElementById("btnDeleteMap");
+const fileMap = document.getElementById("fileMap");
+
+const btnExport = document.getElementById("btnExport");
+const btnImport = document.getElementById("btnImport");
+const fileImport = document.getElementById("fileImport");
+const btnClearAll = document.getElementById("btnClearAll");
+
+/* =====================
+   初始化
+===================== */
+load();
+if (!data.currentMapId && data.maps.length) data.currentMapId = data.maps[0].id;
+renderMapSelect();
+syncCurrentMapUI();
+render();
+
+/* =====================
+   事件：地圖切換 / 改名
+===================== */
+mapSelect.addEventListener("change", () => {
+  data.currentMapId = mapSelect.value;
+  setMode("normal");
+  syncCurrentMapUI();
+  save();
+  render();
+});
+
+mapNameInput.addEventListener("input", () => {
+  const m = getCurrentMap();
+  if (!m) return;
+  m.name = mapNameInput.value.trim() || "未命名地圖";
+  renderMapSelect(true);
+  save();
+  render();
+});
+
+/* =====================
+   模式按鈕（新增/刪除點位）
+===================== */
+btnAddMarker.addEventListener("click", () => setMode(mode === "addMarker" ? "normal" : "addMarker"));
+btnDeleteMarker.addEventListener("click", () => setMode(mode === "deleteMarker" ? "normal" : "deleteMarker"));
+
+/* =====================
+   一鍵重置
+===================== */
+btnResetAll.addEventListener("click", () => {
+  if (!confirm("確定要把【所有地圖】的【所有點位】都重置成狀態 0？")) return;
+  data.markers.forEach(m => m.state = 0);
+  save();
+  render();
+});
+
+/* =====================
+   新增地圖（上傳會轉 base64，這是你現在的設計）
+===================== */
+btnAddMap.addEventListener("click", () => {
+  const name = prompt("請輸入新地圖名稱：", `地圖 ${data.maps.length + 1}`);
+  if (name === null) return;
+
+  fileMap.value = "";
+  fileMap.click();
+
+  fileMap.onchange = async () => {
+    const file = fileMap.files?.[0];
+    if (!file) return;
+
+    const src = await fileToDataURL(file);
+    const newMap = { id: uid(), name: (name.trim() || "未命名地圖"), src };
+
+    data.maps.push(newMap);
+    data.currentMapId = newMap.id;
+
+    setMode("normal");
+    renderMapSelect();
+    syncCurrentMapUI();
+    save();
+    render();
+  };
+});
+
+/* =====================
+   刪除地圖（含該圖所有點位）
+===================== */
+btnDeleteMap.addEventListener("click", () => {
+  const m = getCurrentMap();
+  if (!m) return;
+
+  const ok = confirm(`確定要刪除地圖「${m.name}」？\n（該地圖的所有點位也會一併刪除）`);
+  if (!ok) return;
+
+  data.maps = data.maps.filter(x => x.id !== m.id);
+  data.markers = data.markers.filter(mm => mm.mapId !== m.id);
+  data.currentMapId = data.maps[0]?.id ?? null;
+
+  setMode("normal");
+  renderMapSelect();
+  syncCurrentMapUI();
+  save();
+  render();
+});
+
+/* =====================
+   地圖點擊：新增點位（持續模式）
+===================== */
+mapContainer.addEventListener("click", (e) => {
+  const m = getCurrentMap();
+  if (!m) return;
+  if (mode !== "addMarker") return;
+
+  const rect = mapContainer.getBoundingClientRect();
+  const x = (e.clientX - rect.left) / rect.width;
+  const y = (e.clientY - rect.top) / rect.height;
+
+  data.markers.push({ id: uid(), mapId: m.id, x: clamp01(x), y: clamp01(y), state: 0 });
+  save();
+  render();
+});
+
+/* =====================
+   ✅ 匯出（輕量）：不含 base64 地圖
+===================== */
+btnExport.addEventListener("click", () => {
+  const lite = buildExportLiteData();
+
+  const payload = { exportedAt: new Date().toISOString(), version: 1, data: lite };
+  const json = JSON.stringify(payload, null, 2);
+
+  const blob = new Blob([json], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `map-task-data-lite-${formatDateForFile(new Date())}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+
+/* =====================
+   ✅ 導入：檔案大小/marker 數量限制 + 驗證
+===================== */
+btnImport.addEventListener("click", () => {
+  fileImport.value = "";
+  fileImport.click();
+});
+
+fileImport.addEventListener("change", async () => {
+  const file = fileImport.files?.[0];
+  if (!file) return;
+
+  // 檔案大小限制（最快阻擋）
+  if (file.size > IMPORT_MAX_BYTES) {
+    alert(`❌ 導入失敗：檔案太大（${formatBytes(file.size)}）。\n上限為 ${formatBytes(IMPORT_MAX_BYTES)}。`);
+    return;
+  }
+
+  try {
+    const text = await file.text();
+    const parsed = JSON.parse(text);
+    const incoming = parsed?.data ? parsed.data : parsed;
+
+    // marker 上限（避免 DOM 爆炸）
+    const incomingMarkers = Array.isArray(incoming?.markers) ? incoming.markers.length : 0;
+    if (incomingMarkers > IMPORT_MAX_MARKERS) {
+      alert(`❌ 導入失敗：點位數量過多（${incomingMarkers}）。\n上限為 ${IMPORT_MAX_MARKERS}。`);
+      return;
+    }
+
+    assertValidData(incoming);
+
+    const ok = confirm(
+      "導入會【覆蓋】你目前的所有地圖/點位/狀態。\n" +
+      "建議先匯出備份再導入。\n\n確定要導入嗎？"
+    );
+    if (!ok) return;
+
+    data = incoming;
+
+    // 修正 currentMapId（避免導入後指到不存在）
+    if (!data.currentMapId || !data.maps.some(m => m.id === data.currentMapId)) {
+      data.currentMapId = data.maps[0]?.id ?? null;
+    }
+
+    setMode("normal");
+    renderMapSelect();
+    syncCurrentMapUI();
+    save();
+    render();
+
+    // 如果匯出時去掉 base64，可能存在需要補圖的地圖
+    const needMaps = data.maps.filter(m => m.needsMapUpload === true);
+    if (needMaps.length > 0) {
+      alert("✅ 導入完成！\n⚠️ 有部分地圖需要重新上傳圖片（匯出為輕量模式不包含自訂地圖）。");
+    } else {
+      alert("✅ 導入完成！");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("❌ 導入失敗：JSON 格式不正確或資料內容不符合工具格式。");
+  }
+});
+
+/* =====================
+   ✅ 清空所有資料
+===================== */
+btnClearAll.addEventListener("click", () => {
+  const ok = confirm(
+    "⚠️ 清空所有資料會：\n" +
+    "1) 刪除本工具的 localStorage 記錄\n" +
+    "2) 清空所有點位、還原預設地圖清單\n\n" +
+    "建議先匯出備份。\n\n確定要清空嗎？"
+  );
+  if (!ok) return;
+
+  localStorage.removeItem(STORAGE_KEY);
+
+  data = createDefaultData();
+  data.currentMapId = data.maps[0]?.id ?? null;
+
+  setMode("normal");
+  renderMapSelect();
+  syncCurrentMapUI();
+  render();
+
+  alert("✅ 已清空完成（回到初始狀態）");
+});
+
+/* =====================
+   Render
+===================== */
+function render() {
+  renderLegendAndStats();
+
+  const m = getCurrentMap();
+  mapImg.src = m?.src || "";
+
+  document.querySelectorAll(".marker").forEach(el => el.remove());
+  if (!m) return;
+
+  data.markers.filter(mm => mm.mapId === m.id).forEach(mm => {
+    const el = document.createElement("img");
+    el.className = "marker";
+    el.src = stateIcons[mm.state] || stateIcons[0];
+    el.style.left = (mm.x * 100) + "%";
+    el.style.top  = (mm.y * 100) + "%";
+
+    el.title = (mode === "deleteMarker") ? "點一下刪除這個點位" : "點一下切換狀態（共 4 種）";
+
+    el.addEventListener("click", (ev) => {
+      ev.stopPropagation();
+
+      if (mode === "deleteMarker") {
+        const ok = confirm("刪除這個點位？");
+        if (!ok) return;
+        data.markers = data.markers.filter(x => x.id !== mm.id);
+        save();
+        render();
+        return;
+      }
+
+      mm.state = (mm.state + 1) % stateIcons.length;
+      el.src = stateIcons[mm.state];
+      save();
+      renderLegendAndStats();
+    });
+
+    mapContainer.appendChild(el);
+  });
+
+  modeLabel.textContent =
+    mode === "normal" ? "一般" :
+    mode === "addMarker" ? "新增點位" : "刪除點位";
+}
+
+function renderLegendAndStats() {
+  if (!legendEl) return;
+
+  const legendItems = stateIcons.map((src, i) => {
+    const text = stateLegend[i] ?? `狀態 ${i}`;
+    return `
+      <div class="legend-item">
+        <img class="legend-icon" src="${src}" alt="狀態${i}">
+        <div class="legend-text">${escapeHtml(text)}</div>
+        <div class="legend-state">#${i}</div>
+      </div>
+    `;
+  }).join("");
+
+  const countsByMap = computeCountsByMap();
+
+  const statsRows = data.maps.map(mp => {
+    const c = countsByMap.get(mp.id) || { s1: 0, s3: 0 };
+    return `
+      <div class="stats-row">
+        <div class="stats-name">${escapeHtml(mp.name || "未命名地圖")}</div>
+        <div class="stats-counts">
+          <span class="pill" title="state1 數量">
+            <img src="${stateIcons[1]}" alt="s1"> ${c.s1}
+          </span>
+          <span class="pill" title="state3 數量">
+            <img src="${stateIcons[3]}" alt="s3"> ${c.s3}
+          </span>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  const failedMaps = data.maps
+    .filter(mp => (countsByMap.get(mp.id)?.s3 ?? 0) > 0)
+    .map(mp => `<div class="fail-item">上次「${escapeHtml(mp.name || "未命名地圖")}」有魔靈捕捉失敗</div>`)
+    .join("");
+
+  const failBlock = failedMaps
+    ? `<div class="fail-title">提醒</div>${failedMaps}`
+    : `<div class="fail-title">提醒</div><div class="fail-empty">目前沒有捕捉失敗的地圖（state3 = 0）。</div>`;
+
+  legendEl.innerHTML = `
+    <div class="legend-title">點位狀態</div>
+    ${legendItems}
+
+    <div class="panel-sep"></div>
+
+    <div class="stats-title">地圖統計</div>
+    ${statsRows}
+
+    <div class="panel-sep"></div>
+    ${failBlock}
+  `;
+}
+
+function computeCountsByMap() {
+  const state1Index = 1;
+  const state3Index = 3;
+
+  const map = new Map();
+  for (const mp of data.maps) map.set(mp.id, { s1: 0, s3: 0 });
+
+  for (const mk of data.markers) {
+    const row = map.get(mk.mapId);
+    if (!row) continue;
+    if (mk.state === state1Index) row.s1 += 1;
+    if (mk.state === state3Index) row.s3 += 1;
+  }
+  return map;
+}
+
+function renderMapSelect(preserveSelection = false) {
+  const current = data.currentMapId;
+  mapSelect.innerHTML = "";
+
+  data.maps.forEach((m, i) => {
+    const opt = document.createElement("option");
+    opt.value = m.id;
+    opt.textContent = m.name || `地圖 ${i + 1}`;
+    mapSelect.appendChild(opt);
+  });
+
+  if (preserveSelection && current) mapSelect.value = current;
+  if (!preserveSelection && data.currentMapId) mapSelect.value = data.currentMapId;
+}
+
+function syncCurrentMapUI() {
+  const m = getCurrentMap();
+  mapNameInput.value = m?.name || "";
+  if (m?.id) mapSelect.value = m.id;
+}
+
+function setMode(next) {
+  mode = next;
+  btnAddMarker.classList.toggle("active", mode === "addMarker");
+  btnDeleteMarker.classList.toggle("active", mode === "deleteMarker");
+  render();
+}
+
+/* =====================
+   localStorage
+===================== */
+function save() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch (e) {
+    alert("保存失敗：localStorage 空間可能不夠（地圖圖片太大）。\n建議縮小圖片或減少上傳地圖。");
+  }
+}
+
+function load() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return;
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed?.maps && parsed?.markers) data = parsed;
+  } catch {}
+}
+
+/* =====================
+   ✅ 匯出「輕量 data」
+   - 不輸出 base64 src
+   - 自訂上傳地圖（base64）會被標記 needsMapUpload
+===================== */
+function buildExportLiteData() {
+  const lite = {
+    maps: [],
+    markers: data.markers.map(mk => ({ ...mk })), // marker 本身不大
+    currentMapId: data.currentMapId
+  };
+
+  for (const mp of data.maps) {
+    const isBase64 = typeof mp.src === "string" && mp.src.startsWith("data:image/");
+    if (!ALLOW_EXPORT_BASE64_MAPS && isBase64) {
+      // 不匯出 base64：保留地圖條目但清空 src，並標記要補圖
+      lite.maps.push({
+        id: mp.id,
+        name: mp.name,
+        src: "",
+        needsMapUpload: true
+      });
+    } else {
+      lite.maps.push({
+        id: mp.id,
+        name: mp.name,
+        src: mp.src,
+        needsMapUpload: !!mp.needsMapUpload
+      });
+    }
+  }
+
+  // 若 currentMapId 指向 needsMapUpload 的空 src，也沒關係；使用者自己補圖即可
+  return lite;
+}
+
+/* =====================
+   ✅ 導入驗證/修正
+===================== */
+function assertValidData(d) {
+  if (!d || typeof d !== "object") throw new Error("data not object");
+  if (!Array.isArray(d.maps) || !Array.isArray(d.markers)) throw new Error("missing maps/markers");
+
+  for (const m of d.maps) {
+    if (!m || typeof m !== "object") throw new Error("bad map");
+    if (typeof m.id !== "string") throw new Error("map.id missing");
+    if (typeof m.name !== "string") m.name = "未命名地圖";
+    if (typeof m.src !== "string") m.src = "";
+    if (typeof m.needsMapUpload !== "boolean") m.needsMapUpload = (m.src === "");
+  }
+
+  for (const mk of d.markers) {
+    if (!mk || typeof mk !== "object") throw new Error("bad marker");
+    if (typeof mk.id !== "string") throw new Error("marker.id missing");
+    if (typeof mk.mapId !== "string") throw new Error("marker.mapId missing");
+    if (typeof mk.x !== "number" || typeof mk.y !== "number") throw new Error("marker.x/y missing");
+    if (typeof mk.state !== "number") mk.state = 0;
+
+    mk.state = ((mk.state % stateIcons.length) + stateIcons.length) % stateIcons.length;
+    mk.x = clamp01(mk.x);
+    mk.y = clamp01(mk.y);
+  }
+
+  if (d.currentMapId !== null && typeof d.currentMapId !== "string") d.currentMapId = null;
+
+  const mapIds = new Set(d.maps.map(m => m.id));
+  d.markers = d.markers.filter(mk => mapIds.has(mk.mapId));
+}
+
+/* =====================
+   工具函式
+===================== */
+function getCurrentMap() {
+  return data.maps.find(m => m.id === data.currentMapId) || null;
+}
+
+function uid() {
+  return (crypto?.randomUUID?.() || ("id_" + Math.random().toString(16).slice(2) + Date.now()));
+}
+
+function clamp01(n) {
+  return Math.min(1, Math.max(0, n));
+}
+
+function fileToDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+function formatDateForFile(dt) {
+  const y = dt.getFullYear();
+  const m = String(dt.getMonth() + 1).padStart(2, "0");
+  const d = String(dt.getDate()).padStart(2, "0");
+  const hh = String(dt.getHours()).padStart(2, "0");
+  const mm = String(dt.getMinutes()).padStart(2, "0");
+  return `${y}${m}${d}-${hh}${mm}`;
+}
+
+function formatBytes(bytes) {
+  const units = ["B", "KB", "MB", "GB"];
+  let n = bytes;
+  let i = 0;
+  while (n >= 1024 && i < units.length - 1) { n /= 1024; i++; }
+  return `${n.toFixed(i === 0 ? 0 : 2)} ${units[i]}`;
+}
+</script>
+</body>
+</html>
