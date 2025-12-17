@@ -7,313 +7,401 @@
 
 <style>
   :root { color-scheme: dark; }
-  body {
-    margin: 0;
+  body{
+    margin:0;
     background:#111;
     color:#fff;
     font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans TC", sans-serif;
   }
 
-  header {
+  header{
     position: sticky;
-    top: 0;
+    top:0;
     background: rgba(17,17,17,.92);
     backdrop-filter: blur(8px);
     border-bottom: 1px solid rgba(255,255,255,.08);
     padding: 12px 14px;
-    z-index: 10;
+    z-index:10;
   }
 
-  h1 {
-    margin: 0 0 10px 0;
-    font-size: 18px;
-    font-weight: 650;
+  h1{
+    margin:0 0 10px 0;
+    font-size:18px;
+    font-weight:650;
   }
 
-  .row {
+  .row{
     display:flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    align-items: center;
+    flex-wrap:wrap;
+    gap:8px;
+    align-items:center;
   }
 
-  select, input[type="text"], button {
+  select, input[type="text"], button{
     background:#1b1b1b;
     color:#fff;
     border:1px solid rgba(255,255,255,.14);
-    border-radius: 10px;
-    padding: 8px 10px;
-    font-size: 14px;
-    outline: none;
+    border-radius:10px;
+    padding:8px 10px;
+    font-size:14px;
+    outline:none;
   }
+  input[type="text"]{ width:220px; }
+  button{ cursor:pointer; }
 
-  input[type="text"] { width: 220px; }
-  button { cursor:pointer; }
+  button.primary{ border-color: rgba(130,200,255,.6); }
+  button.danger { border-color: rgba(255,120,120,.6); }
 
-  button.primary { border-color: rgba(130,200,255,.6); }
-  button.danger  { border-color: rgba(255,120,120,.6); }
-
-  button.active {
+  button.active{
     border-color: rgba(120,255,180,.7);
     box-shadow: 0 0 0 2px rgba(120,255,180,.15) inset;
   }
 
-  .hint {
-    margin-top: 10px;
-    font-size: 12px;
+  .hint{
+    margin-top:10px;
+    font-size:12px;
     color: rgba(255,255,255,.72);
-    line-height: 1.45;
+    line-height:1.45;
   }
+  .hint-strong{ color:#fbbf24; font-weight:650; }
+  .hint-info  { color:#7dd3fc; }
+  .hint-title { color:#a7f3d0; font-weight:650; }
+  .hint-warning{ color:#fb7185; font-weight:650; }
 
-  .hint-strong { color: #fbbf24; font-weight: 650; }
-  .hint-info   { color: #7dd3fc; }
-  .hint-title  { color: #a7f3d0; font-weight: 650; }
-  .hint-warning{ color: #fb7185; font-weight: 650; }
-
-  .hint-line { margin: 4px 0; }
-  .hint-details {
-    margin-top: 10px;
-    padding-top: 8px;
-    border-top: 1px solid rgba(255,255,255,.10);
+  .hint-line{ margin:4px 0; }
+  .hint-details{
+    margin-top:10px;
+    padding-top:8px;
+    border-top:1px solid rgba(255,255,255,.10);
   }
-  .hint-details summary {
-    cursor: pointer;
+  .hint-details summary{
+    cursor:pointer;
     color: rgba(255,255,255,.85);
-    font-weight: 650;
-    list-style: none;
-    user-select: none;
+    font-weight:650;
+    list-style:none;
+    user-select:none;
   }
-  .hint-details summary::-webkit-details-marker { display: none; }
-  .hint-block { margin-top: 10px; }
-  .hint-subtitle { font-weight: 650; color: rgba(255,255,255,.90); margin-bottom: 4px; }
-  .hint-text { color: rgba(255,255,255,.75); }
-  .hint-list { margin: 6px 0 0 18px; padding: 0; }
-  .hint-list li { margin: 4px 0; }
+  .hint-details summary::-webkit-details-marker{ display:none; }
+  .hint-block{ margin-top:10px; }
+  .hint-subtitle{ font-weight:650; color: rgba(255,255,255,.90); margin-bottom:4px; }
+  .hint-text{ color: rgba(255,255,255,.75); }
+  .hint-list{ margin:6px 0 0 18px; padding:0; }
+  .hint-list li{ margin:4px 0; }
 
-  main { padding: 14px; }
+  main{ padding:14px; }
 
-  #mapWrap {
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-    justify-content: center;
+  #mapWrap{
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+    justify-content:center;
   }
 
-  #legend {
-    width: 260px;
-    max-width: 45vw;
+  #legend{
+    width:260px;
+    max-width:45vw;
     background: rgba(255,255,255,.04);
-    border: 1px solid rgba(255,255,255,.10);
-    border-radius: 14px;
-    padding: 10px;
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:14px;
+    padding:10px;
     position: sticky;
-    top: 92px;
+    top:92px;
   }
 
-  .legend-title {
-    font-size: 13px;
-    font-weight: 700;
-    margin: 2px 0 10px 0;
+  .legend-title{
+    font-size:13px;
+    font-weight:700;
+    margin:2px 0 10px 0;
     color: rgba(255,255,255,.90);
   }
 
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 8px;
-    border-radius: 12px;
-  }
-  .legend-item:hover { background: rgba(255,255,255,.05); }
-
-  .legend-icon {
-    width: 22px;
-    height: 22px;
-    border-radius: 6px;
-    flex: 0 0 auto;
-  }
-
-  .legend-text { font-size: 13px; color: rgba(255,255,255,.82); line-height: 1.2; }
-  .legend-state { font-size: 12px; color: rgba(255,255,255,.55); margin-left: auto; }
-
-  .panel-sep { margin: 10px 0; border-top: 1px solid rgba(255,255,255,.10); }
-
-  .stats-title {
-    font-size: 13px;
-    font-weight: 700;
-    margin: 10px 0 8px 0;
-    color: rgba(255,255,255,.90);
-  }
-
-  .stats-row {
+  .legend-item{
     display:flex;
     align-items:center;
-    gap: 8px;
-    padding: 7px 8px;
-    border-radius: 12px;
+    gap:10px;
+    padding:8px 8px;
+    border-radius:12px;
   }
-  .stats-row:hover { background: rgba(255,255,255,.05); }
+  .legend-item:hover{ background: rgba(255,255,255,.05); }
 
-  .stats-name {
-    font-size: 13px;
-    color: rgba(255,255,255,.86);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    flex: 1 1 auto;
+  .legend-icon{
+    width:22px;
+    height:22px;
+    border-radius:6px;
+    flex:0 0 auto;
   }
 
-  .stats-counts {
+  .legend-text{ font-size:13px; color: rgba(255,255,255,.82); line-height:1.2; }
+  .legend-state{ font-size:12px; color: rgba(255,255,255,.55); margin-left:auto; }
+
+  .panel-sep{ margin:10px 0; border-top:1px solid rgba(255,255,255,.10); }
+
+  .stats-title{
+    font-size:13px;
+    font-weight:700;
+    margin:10px 0 8px 0;
+    color: rgba(255,255,255,.90);
+  }
+
+  .stats-row{
     display:flex;
-    gap: 10px;
-    flex: 0 0 auto;
-    font-size: 12px;
+    align-items:center;
+    gap:8px;
+    padding:7px 8px;
+    border-radius:12px;
+  }
+  .stats-row:hover{ background: rgba(255,255,255,.05); }
+
+  .stats-name{
+    font-size:13px;
+    color: rgba(255,255,255,.86);
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    flex:1 1 auto;
+  }
+
+  .stats-counts{
+    display:flex;
+    gap:10px;
+    flex:0 0 auto;
+    font-size:12px;
     color: rgba(255,255,255,.68);
   }
 
-  .pill {
-    display:inline-flex;
-    align-items:center;
-    gap: 6px;
-    padding: 3px 8px;
-    border-radius: 999px;
-    border: 1px solid rgba(255,255,255,.12);
-    background: rgba(0,0,0,.12);
-  }
-  .pill img { width: 14px; height: 14px; border-radius: 4px; }
-
-  .fail-title {
-    font-size: 13px;
-    font-weight: 700;
-    margin: 10px 0 8px 0;
-    color: rgba(255,255,255,.90);
-  }
-  .fail-item {
-    font-size: 12px;
-    color: rgba(255,255,255,.72);
-    padding: 6px 8px;
-    border-radius: 12px;
-    border: 1px dashed rgba(255,120,120,.35);
-    background: rgba(255,120,120,.06);
-    margin: 6px 0;
-    line-height: 1.35;
-  }
-  .fail-empty { font-size: 12px; color: rgba(255,255,255,.55); padding: 6px 8px; }
-
-  #mapContainer {
-    position: relative;
-    display: inline-block;
-    margin: 8px auto 18px auto;
-    border-radius: 14px;
-    overflow: hidden;
-    box-shadow: 0 10px 40px rgba(0,0,0,.35);
-    border: 1px solid rgba(255,255,255,.08);
-    max-width: min(1200px, 96vw);
-  }
-
-  #mapImg { display:block; width: 100%; height: auto; }
-
-  .marker {
-    position:absolute;
-    width: 30px;
-    height: 30px;
-    transform: translate(-50%, -50%);
-    cursor: pointer;
-    user-select: none;
-  }
-  .marker:hover { filter: drop-shadow(0 0 6px rgba(255,255,255,.25)); }
-
-  .badge {
+  .pill{
     display:inline-flex;
     align-items:center;
     gap:6px;
-    padding: 6px 10px;
+    padding:3px 8px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,.12);
+    background: rgba(0,0,0,.12);
+  }
+  .pill img{ width:14px; height:14px; border-radius:4px; }
+
+  .fail-title{
+    font-size:13px;
+    font-weight:700;
+    margin:10px 0 8px 0;
+    color: rgba(255,255,255,.90);
+  }
+  .fail-item{
+    font-size:12px;
+    color: rgba(255,255,255,.72);
+    padding:6px 8px;
+    border-radius:12px;
+    border:1px dashed rgba(255,120,120,.35);
+    background: rgba(255,120,120,.06);
+    margin:6px 0;
+    line-height:1.35;
+  }
+  .fail-empty{ font-size:12px; color: rgba(255,255,255,.55); padding:6px 8px; }
+
+  #mapContainer{
+    position:relative;
+    display:inline-block;
+    margin:8px auto 18px auto;
+    border-radius:14px;
+    overflow:hidden;
+    box-shadow: 0 10px 40px rgba(0,0,0,.35);
+    border:1px solid rgba(255,255,255,.08);
+    max-width: min(1200px, 96vw);
+    max-height: calc(100vh - 240px);
+  }
+
+  #mapImg{
+    display:block;
+    width:100%;
+    height:auto;
+    max-height: calc(100vh - 240px);
+    object-fit: contain;
+  }
+
+  .marker{
+    position:absolute;
+    width:30px;
+    height:30px;
+    transform: translate(-50%, -50%);
+    cursor:pointer;
+    user-select:none;
+  }
+  .marker:hover{ filter: drop-shadow(0 0 6px rgba(255,255,255,.25)); }
+
+  .badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:6px 10px;
     border:1px dashed rgba(255,255,255,.18);
-    border-radius: 999px;
-    font-size: 12px;
+    border-radius:999px;
+    font-size:12px;
     color: rgba(255,255,255,.8);
   }
-  .badge b { color: rgba(255,255,255,.95); }
+  .badge b{ color: rgba(255,255,255,.95); }
 
-  /* ✅ 地圖不要把畫面吃光（電腦/手機都有效） */
-  #mapContainer { max-height: calc(100vh - 240px); }
-  #mapImg { max-height: calc(100vh - 240px); object-fit: contain; }
-
-  /* ✅ 小螢幕：上下排列、字變大、按鈕更好點（手機最舒服） */
-  @media (max-width: 920px) {
-    header { padding: 10px 10px; }
-    h1 { font-size: 16px; }
-
-    .row { gap: 8px; }
-
-    select, input[type="text"], button {
-      font-size: 15px;
-      padding: 10px 12px;
-      border-radius: 12px;
+  @media (max-width: 920px){
+    header{ padding:10px 10px; }
+    h1{ font-size:16px; }
+    .row{ gap:8px; }
+    select, input[type="text"], button{
+      font-size:15px;
+      padding:10px 12px;
+      border-radius:12px;
     }
-    input[type="text"] { width: min(260px, 70vw); }
+    input[type="text"]{ width: min(260px, 70vw); }
 
-    #mapWrap { flex-direction: column; align-items: stretch; }
-    #legend { width: auto; max-width: none; position: relative; top: 0; margin-bottom: 10px; }
+    #mapWrap{ flex-direction: column; align-items: stretch; }
+    #legend{ width:auto; max-width:none; position:relative; top:0; margin-bottom:10px; }
 
-    .hint { font-size: 13px; line-height: 1.55; }
-    .marker { width: 34px; height: 34px; }
+    .hint{ font-size:13px; line-height:1.55; }
+    .marker{ width:34px; height:34px; }
   }
-  .menu-group { display:flex; gap:8px; flex-wrap:wrap; }
 
-.dropdown { position: relative; }
+  /* ===== 下拉選單（只點擊才展開 / 再點一次收起） ===== */
+  .menu-group{ display:flex; gap:8px; flex-wrap:wrap; }
+  .dropdown{ position:relative; }
 
-.menu-btn{
-  background:#1b1b1b;
-  color:#fff;
-  border:1px solid rgba(255,255,255,.14);
-  border-radius:10px;
-  padding:8px 12px;
-  cursor:pointer;
-}
+  .menu-btn{
+    background:#1b1b1b;
+    color:#fff;
+    border:1px solid rgba(255,255,255,.14);
+    border-radius:10px;
+    padding:8px 12px;
+    cursor:pointer;
+  }
 
-.menu{
-  position:absolute;
-  top:calc(100% + 6px);
-  left:0;
-  min-width:220px;
-  background:#181818;
-  border:1px solid rgba(255,255,255,.12);
-  border-radius:12px;
-  box-shadow:0 12px 30px rgba(0,0,0,.4);
-  padding:6px;
-  display:none;
-  z-index:50;
-}
+  .menu{
+    position:absolute;
+    top:calc(100% + 6px);
+    left:0;
+    min-width:220px;
+    background:#181818;
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:12px;
+    box-shadow:0 12px 30px rgba(0,0,0,.4);
+    padding:6px;
+    display:none;
+    z-index:50;
+  }
+  .dropdown.open .menu{ display:block; }
 
-.dropdown.open .menu { display:block; }
+  .menu button{
+    width:100%;
+    text-align:left;
+    background:transparent;
+    border:none;
+    color:#fff;
+    padding:8px 10px;
+    border-radius:8px;
+    cursor:pointer;
+  }
+  .menu button:hover{ background: rgba(255,255,255,.08); }
+  .menu .danger{ color:#ff7b7b; }
+  .menu hr{
+    border:none;
+    border-top:1px solid rgba(255,255,255,.1);
+    margin:6px 0;
+  }
 
-.menu button{
-  width:100%;
-  text-align:left;
-  background:transparent;
-  border:none;
-  color:#fff;
-  padding:8px 10px;
-  border-radius:8px;
-  cursor:pointer;
-}
+  @media (max-width: 920px){
+    .menu{ min-width: min(92vw, 320px); }
+  }
 
-.menu button:hover{ background:rgba(255,255,255,.08); }
-.menu .danger{ color:#ff7b7b; }
+  /* ===== 地圖排序 Modal ===== */
+  #sortModal{
+    position:fixed;
+    inset:0;
+    background: rgba(0,0,0,.62);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:220;
+  }
+  #sortModal[hidden]{ display:none; }
 
-.menu hr{
-  border:none;
-  border-top:1px solid rgba(255,255,255,.1);
-  margin:6px 0;
-}
+  .sort-panel{
+    width:min(92vw, 420px);
+    background:#181818;
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:14px;
+    box-shadow:0 18px 50px rgba(0,0,0,.55);
+    padding:14px;
+  }
 
-/* 小螢幕：讓 menu 不要超出畫面 */
-@media (max-width: 920px){
-  .menu{ position: absolute; min-width: min(92vw, 320px); }
-}
+  .sort-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:10px;
+  }
+  .sort-title{
+    font-weight:750;
+    font-size:14px;
+    color: rgba(255,255,255,.92);
+  }
+  .sort-sub{
+    font-size:12px;
+    color: rgba(255,255,255,.62);
+    margin-top:2px;
+    line-height:1.35;
+  }
 
-  
+  .sort-actions{ display:flex; gap:8px; }
+  .sort-actions button{
+    border:1px solid rgba(255,255,255,.14);
+    border-radius:10px;
+    padding:8px 10px;
+    background:#1b1b1b;
+    color:#fff;
+    cursor:pointer;
+  }
+
+  #sortList{
+    list-style:none;
+    padding:0;
+    margin:10px 0 0 0;
+    max-height: min(56vh, 420px);
+    overflow:auto;
+  }
+
+  #sortList li{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 10px;
+    border:1px solid rgba(255,255,255,.14);
+    border-radius:12px;
+    background:#1f1f1f;
+    margin-bottom:8px;
+    cursor:grab;
+    user-select:none;
+  }
+
+  #sortList li:active{ cursor:grabbing; }
+  #sortList li.dragging{ opacity:.45; }
+
+  .drag-handle{
+    width:18px; height:18px;
+    border-radius:6px;
+    border:1px solid rgba(255,255,255,.12);
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    color: rgba(255,255,255,.65);
+    font-size:12px;
+    flex:0 0 auto;
+  }
+
+  .sort-name{
+    flex:1 1 auto;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    color: rgba(255,255,255,.9);
+    font-size:13px;
+  }
 </style>
 </head>
 
@@ -332,43 +420,44 @@
       <input id="mapName" type="text" placeholder="地圖名稱" />
     </label>
 
-<div class="menu-group">
-  <!-- 點位 -->
-  <div class="dropdown" data-dd>
-    <button class="menu-btn" type="button" aria-expanded="false">📍 點位 ▾</button>
-    <div class="menu" role="menu">
-      <button id="btnAddMarker" type="button">➕ 新增點位</button>
-      <button id="btnDeleteMarker" type="button">🗑️ 刪除點位</button>
-      <hr>
-      <button id="btnResetAll" type="button">🔄 全部點位重置</button>
-      <button id="btnDeleteMarkersCurrent" type="button">🧹 清空本地圖點位</button>
-      <button class="danger" id="btnDeleteAllMarkers" type="button">💥 刪除所有點位</button>
+    <div class="menu-group">
+      <!-- 點位 -->
+      <div class="dropdown" data-dd>
+        <button class="menu-btn" type="button" aria-expanded="false">📍 點位 ▾</button>
+        <div class="menu" role="menu">
+          <button id="btnAddMarker" type="button">➕ 新增點位</button>
+          <button id="btnDeleteMarker" type="button">🗑️ 刪除點位</button>
+          <hr>
+          <button id="btnResetAll" type="button">🔄 全部點位重置</button>
+          <button id="btnDeleteMarkersCurrent" type="button">🧹 清空本地圖點位</button>
+          <button class="danger" id="btnDeleteAllMarkers" type="button">💥 刪除所有點位</button>
+        </div>
+      </div>
+
+      <!-- 地圖 -->
+      <div class="dropdown" data-dd>
+        <button class="menu-btn" type="button" aria-expanded="false">🗺️ 地圖 ▾</button>
+        <div class="menu" role="menu">
+          <button id="btnAddMap" type="button">🖼️ 新增地圖</button>
+          <button class="danger" id="btnDeleteMap" type="button">🧨 刪除地圖</button>
+          <button id="btnReplaceMapImage" type="button">🔁 重新上傳此地圖圖片</button>
+          <hr>
+          <button id="btnSortMaps" type="button">🔖 調整地圖順序</button>
+        </div>
+      </div>
+
+      <!-- 資料 -->
+      <div class="dropdown" data-dd>
+        <button class="menu-btn" type="button" aria-expanded="false">💾 資料 ▾</button>
+        <div class="menu" role="menu">
+          <button id="btnExport" type="button">⬇️ 匯出資料</button>
+          <button id="btnImport" type="button">⬆️ 導入資料</button>
+          <hr>
+          <button class="danger" id="btnClearAll" type="button">🧹 清空所有資料（初始化）</button>
+        </div>
+      </div>
     </div>
   </div>
-
-  <!-- 地圖 -->
-  <div class="dropdown" data-dd>
-    <button class="menu-btn" type="button" aria-expanded="false">🗺️ 地圖 ▾</button>
-    <div class="menu" role="menu">
-      <button id="btnAddMap" type="button">🖼️ 新增地圖</button>
-      <button class="danger" id="btnDeleteMap" type="button">🧨 刪除地圖</button>
-    </div>
-  </div>
-
-  <!-- 資料 -->
-  <div class="dropdown" data-dd>
-    <button class="menu-btn" type="button" aria-expanded="false">💾 資料 ▾</button>
-    <div class="menu" role="menu">
-      <button id="btnExport" type="button">⬇️ 匯出資料</button>
-      <button id="btnImport" type="button">⬆️ 導入資料</button>
-      <hr>
-      <button class="danger" id="btnClearAll" type="button">🧹 清空所有資料</button>
-    </div>
-  </div>
-</div>
-
-
-
 
   <div class="hint">
     <div class="hint-line">
@@ -429,6 +518,23 @@
 
   <input id="fileMap" type="file" accept="image/*" style="display:none" />
   <input id="fileImport" type="file" accept="application/json,.json" style="display:none" />
+
+  <!-- ✅ 地圖排序 Modal -->
+  <div id="sortModal" hidden aria-hidden="true">
+    <div class="sort-panel" role="dialog" aria-modal="true" aria-label="調整地圖順序">
+      <div class="sort-head">
+        <div>
+          <div class="sort-title">🔖 拖曳調整地圖順序</div>
+          <div class="sort-sub">會影響「地圖下拉」與「左側統計」的順序，不會影響任何點位。</div>
+        </div>
+        <div class="sort-actions">
+          <button id="btnSortCancel" type="button">取消</button>
+          <button id="btnSortDone" type="button" class="primary">完成</button>
+        </div>
+      </div>
+      <ul id="sortList"></ul>
+    </div>
+  </div>
 </main>
 
 <script>
@@ -449,7 +555,7 @@ const STORAGE_KEY = "mapTaskTool_v4";
 /* =====================
    預設資料
 ===================== */
-function createDefaultData() {
+function createDefaultData(){
   return {
     maps: [
       { id: uid(), name: "淨界島", src: "maps/map1.png" },
@@ -480,18 +586,26 @@ const legendEl = document.getElementById("legend");
 const btnAddMarker = document.getElementById("btnAddMarker");
 const btnDeleteMarker = document.getElementById("btnDeleteMarker");
 const btnResetAll = document.getElementById("btnResetAll");
-
 const btnDeleteMarkersCurrent = document.getElementById("btnDeleteMarkersCurrent");
 const btnDeleteAllMarkers = document.getElementById("btnDeleteAllMarkers");
 
 const btnAddMap = document.getElementById("btnAddMap");
 const btnDeleteMap = document.getElementById("btnDeleteMap");
+const btnReplaceMapImage = document.getElementById("btnReplaceMapImage");
+const btnSortMaps = document.getElementById("btnSortMaps");
+
 const fileMap = document.getElementById("fileMap");
 
 const btnExport = document.getElementById("btnExport");
 const btnImport = document.getElementById("btnImport");
 const fileImport = document.getElementById("fileImport");
 const btnClearAll = document.getElementById("btnClearAll");
+
+/* 地圖排序 Modal DOM */
+const sortModal = document.getElementById("sortModal");
+const sortList = document.getElementById("sortList");
+const btnSortDone = document.getElementById("btnSortDone");
+const btnSortCancel = document.getElementById("btnSortCancel");
 
 /* =====================
    初始化
@@ -519,7 +633,7 @@ mapNameInput.addEventListener("input", () => {
   m.name = mapNameInput.value.trim() || "未命名地圖";
   renderMapSelect(true);
   save();
-  render();
+  renderLegendAndStats();
 });
 
 /* =====================
@@ -633,6 +747,127 @@ btnDeleteMap.addEventListener("click", () => {
 });
 
 /* =====================
+   🔁 重新上傳此地圖圖片
+===================== */
+btnReplaceMapImage.addEventListener("click", () => {
+  const m = getCurrentMap();
+  if (!m) {
+    alert("目前沒有選擇任何地圖。");
+    return;
+  }
+
+  const ok = confirm(
+    `你即將重新上傳地圖圖片：\n「${m.name}」\n\n` +
+    "這只會更換圖片，不會影響任何點位或狀態。\n\n確定要繼續嗎？"
+  );
+  if (!ok) return;
+
+  fileMap.value = "";
+  fileMap.click();
+
+  fileMap.onchange = async () => {
+    const file = fileMap.files?.[0];
+    if (!file) return;
+
+    try {
+      const src = await fileToDataURL(file);
+      m.src = src;
+      m.needsMapUpload = false;
+
+      save();
+      render();
+      alert(`✅ 地圖「${m.name}」已成功重新上傳圖片`);
+    } catch (err) {
+      console.error(err);
+      alert("❌ 上傳失敗，請確認檔案是否為圖片。");
+    }
+  };
+});
+
+/* =====================
+   🔖 地圖排序（拖曳）
+===================== */
+btnSortMaps.addEventListener("click", () => {
+  openSortModal();
+});
+
+function openSortModal(){
+  sortList.innerHTML = "";
+
+  data.maps.forEach(mp => {
+    const li = document.createElement("li");
+    li.draggable = true;
+    li.dataset.id = mp.id;
+
+    li.innerHTML = `
+      <span class="drag-handle">≡</span>
+      <span class="sort-name">${escapeHtml(mp.name || "未命名地圖")}</span>
+    `;
+    sortList.appendChild(li);
+  });
+
+  sortModal.hidden = false;
+  sortModal.setAttribute("aria-hidden", "false");
+
+  initDragSort();
+}
+
+function closeSortModal(){
+  sortModal.hidden = true;
+  sortModal.setAttribute("aria-hidden", "true");
+  sortList.innerHTML = "";
+}
+
+btnSortCancel.addEventListener("click", closeSortModal);
+
+/* 點黑底關閉（只點到背景才關） */
+sortModal.addEventListener("click", (e) => {
+  if (e.target === sortModal) closeSortModal();
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !sortModal.hidden) closeSortModal();
+});
+
+btnSortDone.addEventListener("click", () => {
+  const newOrder = Array.from(sortList.children).map(li => li.dataset.id);
+
+  data.maps.sort((a, b) => newOrder.indexOf(a.id) - newOrder.indexOf(b.id));
+
+  save();
+  renderMapSelect(true);
+  renderLegendAndStats();
+  closeSortModal();
+});
+
+function initDragSort(){
+  const items = Array.from(sortList.querySelectorAll("li"));
+  let dragging = null;
+
+  items.forEach(li => {
+    li.addEventListener("dragstart", () => {
+      dragging = li;
+      li.classList.add("dragging");
+    });
+
+    li.addEventListener("dragend", () => {
+      li.classList.remove("dragging");
+      dragging = null;
+    });
+
+    li.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      const target = li;
+      if (!dragging || target === dragging) return;
+
+      const rect = target.getBoundingClientRect();
+      const after = e.clientY > rect.top + rect.height / 2;
+      sortList.insertBefore(dragging, after ? target.nextSibling : target);
+    });
+  });
+}
+
+/* =====================
    地圖點擊：新增點位（持續模式）
 ===================== */
 mapContainer.addEventListener("click", (e) => {
@@ -650,7 +885,7 @@ mapContainer.addEventListener("click", (e) => {
 });
 
 /* =====================
-   ✅ 匯出（輕量）：不含 base64 地圖
+   ✅ 匯出（輕量）
 ===================== */
 btnExport.addEventListener("click", () => {
   const lite = buildExportLiteData();
@@ -668,7 +903,7 @@ btnExport.addEventListener("click", () => {
 });
 
 /* =====================
-   ✅ 導入：檔案大小/marker 數量限制 + 驗證
+   ✅ 導入
 ===================== */
 btnImport.addEventListener("click", () => {
   fileImport.value = "";
@@ -717,7 +952,7 @@ fileImport.addEventListener("change", async () => {
 
     const needMaps = data.maps.filter(m => m.needsMapUpload === true);
     if (needMaps.length > 0) {
-      alert("✅ 導入完成！\n⚠️ 有部分地圖需要重新上傳圖片（匯出為輕量模式不包含自訂地圖）。");
+      alert("✅ 導入完成！\n⚠️ 有部分地圖需要重新上傳圖片（匯出資料不包含自訂地圖）。");
     } else {
       alert("✅ 導入完成！");
     }
@@ -755,7 +990,7 @@ btnClearAll.addEventListener("click", () => {
 /* =====================
    Render
 ===================== */
-function render() {
+function render(){
   renderLegendAndStats();
 
   const m = getCurrentMap();
@@ -799,7 +1034,7 @@ function render() {
     mode === "addMarker" ? "新增點位" : "刪除點位";
 }
 
-function renderLegendAndStats() {
+function renderLegendAndStats(){
   if (!legendEl) return;
 
   const legendItems = stateIcons.map((src, i) => {
@@ -855,7 +1090,7 @@ function renderLegendAndStats() {
   `;
 }
 
-function computeCountsByMap() {
+function computeCountsByMap(){
   const state1Index = 1;
   const state3Index = 3;
 
@@ -871,7 +1106,7 @@ function computeCountsByMap() {
   return map;
 }
 
-function renderMapSelect(preserveSelection = false) {
+function renderMapSelect(preserveSelection = false){
   const current = data.currentMapId;
   mapSelect.innerHTML = "";
 
@@ -886,13 +1121,13 @@ function renderMapSelect(preserveSelection = false) {
   if (!preserveSelection && data.currentMapId) mapSelect.value = data.currentMapId;
 }
 
-function syncCurrentMapUI() {
+function syncCurrentMapUI(){
   const m = getCurrentMap();
   mapNameInput.value = m?.name || "";
   if (m?.id) mapSelect.value = m.id;
 }
 
-function setMode(next) {
+function setMode(next){
   mode = next;
   btnAddMarker.classList.toggle("active", mode === "addMarker");
   btnDeleteMarker.classList.toggle("active", mode === "deleteMarker");
@@ -902,7 +1137,7 @@ function setMode(next) {
 /* =====================
    localStorage
 ===================== */
-function save() {
+function save(){
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   } catch (e) {
@@ -910,7 +1145,7 @@ function save() {
   }
 }
 
-function load() {
+function load(){
   const raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) return;
   try {
@@ -922,7 +1157,7 @@ function load() {
 /* =====================
    匯出「輕量 data」
 ===================== */
-function buildExportLiteData() {
+function buildExportLiteData(){
   const lite = {
     maps: [],
     markers: data.markers.map(mk => ({ ...mk })),
@@ -943,7 +1178,7 @@ function buildExportLiteData() {
 /* =====================
    導入驗證/修正
 ===================== */
-function assertValidData(d) {
+function assertValidData(d){
   if (!d || typeof d !== "object") throw new Error("data not object");
   if (!Array.isArray(d.maps) || !Array.isArray(d.markers)) throw new Error("missing maps/markers");
 
@@ -976,17 +1211,17 @@ function assertValidData(d) {
 /* =====================
    工具函式
 ===================== */
-function getCurrentMap() {
+function getCurrentMap(){
   return data.maps.find(m => m.id === data.currentMapId) || null;
 }
 
-function uid() {
+function uid(){
   return (crypto?.randomUUID?.() || ("id_" + Math.random().toString(16).slice(2) + Date.now()));
 }
 
-function clamp01(n) { return Math.min(1, Math.max(0, n)); }
+function clamp01(n){ return Math.min(1, Math.max(0, n)); }
 
-function fileToDataURL(file) {
+function fileToDataURL(file){
   return new Promise((resolve, reject) => {
     const r = new FileReader();
     r.onload = () => resolve(r.result);
@@ -995,7 +1230,7 @@ function fileToDataURL(file) {
   });
 }
 
-function escapeHtml(s) {
+function escapeHtml(s){
   return String(s)
     .replaceAll("&","&amp;")
     .replaceAll("<","&lt;")
@@ -1004,7 +1239,7 @@ function escapeHtml(s) {
     .replaceAll("'","&#039;");
 }
 
-function formatDateForFile(dt) {
+function formatDateForFile(dt){
   const y = dt.getFullYear();
   const m = String(dt.getMonth() + 1).padStart(2, "0");
   const d = String(dt.getDate()).padStart(2, "0");
@@ -1013,13 +1248,17 @@ function formatDateForFile(dt) {
   return `${y}${m}${d}-${hh}${mm}`;
 }
 
-function formatBytes(bytes) {
+function formatBytes(bytes){
   const units = ["B", "KB", "MB", "GB"];
   let n = bytes;
   let i = 0;
   while (n >= 1024 && i < units.length - 1) { n /= 1024; i++; }
   return `${n.toFixed(i === 0 ? 0 : 2)} ${units[i]}`;
 }
+
+/* =====================
+   ✅ 下拉選單行為：只點擊才展開/再次點收起
+===================== */
 (function initDropdowns(){
   const dropdowns = Array.from(document.querySelectorAll("[data-dd]"));
 
@@ -1037,10 +1276,8 @@ function formatBytes(bytes) {
     const menu = dd.querySelector(".menu");
     if (!btn || !menu) return;
 
-    // 點按按鈕：切換開/關
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
-
       const isOpen = dd.classList.contains("open");
       if (isOpen) {
         dd.classList.remove("open");
@@ -1052,7 +1289,6 @@ function formatBytes(bytes) {
       }
     });
 
-    // 點 menu 內的任何按鈕：執行原本功能後，自動收起
     menu.addEventListener("click", (e) => {
       const target = e.target;
       if (target && target.tagName === "BUTTON") {
@@ -1062,15 +1298,12 @@ function formatBytes(bytes) {
     });
   });
 
-  // 點空白處：全部收起
   document.addEventListener("click", () => closeAll(null));
 
-  // ESC 收起（加分）
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeAll(null);
   });
 })();
-
 </script>
 </body>
 </html>
