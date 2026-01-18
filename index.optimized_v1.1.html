@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>魔靈標示輔助器</title>
+
+
+
+<link rel="stylesheet" href="./styles.optimized.css?v=36" />
+<script src="./app.optimized.js?v=36" defer></script>
+
+</head>
+
+<body>
+<header>
+  <h1>📍 魔靈標示輔助器</h1>
+
+  <div class="row">
+    <span class="badge">模式：<b id="modeLabel">一般</b></span>
+    <span class="badge custom-badge custom-inline" data-custom>自定義模式：<b>ON</b></span>
+
+    <label>地圖：
+      <select id="mapSelect"></select>
+    </label>
+
+    <label class="custom-inline" data-custom>名稱：
+      <input id="mapName" type="text" placeholder="地圖名稱（自定義）" />
+    </label>
+  </div>
+
+  <details class="fold" data-fold-key="top_info">
+    <summary>ℹ️ 使用說明 / 規則（點開查看）</summary>
+    <div class="fold-body">
+      <div class="hint" style="margin-top:0;">
+        <div class="hint-line">
+          <span class="hint-strong">點位只需點擊切換狀態。</span>
+          <span class="hint-info">（本工具自動保存）</span>
+        </div>
+
+        <div class="hint-line">
+          <span class="hint-title">刷新數量</span>：
+          淨界島 8｜冰湖 主城 4 / 郊外 10 / 洞窟&Boss 3 - 共 17｜下水道 7｜廢礦 7｜龍莎要塞 7｜煙津渡 25
+        </div>
+
+        <div class="hint-line hint-warning">
+          達捕捉上限後，同地圖其餘點位可略過。
+        </div>
+
+        <button id="btnOpenRules" type="button" class="rule-btn">📘 魔靈刷新規則（點開查看）</button>
+      </div>
+    </div>
+  </details>
+
+  <dialog id="ruleDialog" class="rule-dialog">
+    <div class="rule-head">
+      <div class="rule-title">📘 魔靈刷新規則</div>
+      <button type="button" class="rule-close" id="btnCloseRules">✕</button>
+    </div>
+    <div class="rule-body">
+      <section class="rule-card">
+        <h3>刷新順序</h3>
+        <p>3 → 6 → 2 → 5 → 1 → 4 → 7（循環）</p>
+        <p>※ 禮拜三、六、二、五、一、四、日</p>
+      </section>
+      <section class="rule-card">
+        <h3>72 小時重置</h3>
+        <p>無論成功或失敗，皆以「刷新後 +72 小時」重置；重置後可能出現在其他點位。</p>
+      </section>
+      <section class="rule-card">
+        <h3>魔靈出現規則（對照）</h3>
+        <ul>
+          <li>第 1 天：成功 → 第 2、3 天不顯示；失敗 → 第 2、3 天顯示</li>
+          <li>第 2 天：成功 → 第 3 天不顯示；失敗 → 第 3 天顯示</li>
+          <li>第 3 天：成功 / 失敗 → 過點等待刷新</li>
+        </ul>
+      </section>
+    </div>
+  </dialog>
+</header>
+
+<main>
+  <div id="mapWrap">
+    <!-- ✅ 左側 Dock -->
+    <div id="leftDock" class="dock dock-left" aria-label="左側資訊面板">
+      <button id="btnLeftDockToggle" class="dock-toggle" type="button" title="收起/展開左側面板">◀</button>
+      <div class="dock-rail-label" aria-hidden="true"><span>點位、地圖資訊</span></div>
+
+      <div class="dock-body">
+        <div class="dock-title">點位、地圖資訊</div>
+        <aside id="legend" aria-label="點位狀態說明與統計"></aside>
+      </div>
+    </div>
+
+    <!-- ✅ 右側 Dock -->
+    <div id="rightDock" class="dock dock-right" aria-label="右側操作面板">
+      <button id="btnRightDockToggle" class="dock-toggle" type="button" title="收起/展開右側面板">▶</button>
+      <div class="dock-rail-label" aria-hidden="true"><span>快捷操作</span></div>
+
+      <div class="dock-body">
+        <div class="right-stack">
+          <div class="dock-title">快捷操作</div>
+
+          <div class="quick-actions">
+            <div class="qa-main">
+              <button id="btnOpenSpirits" type="button" class="primary">🔎 查詢魔靈</button>
+              <!-- ✅ 點位名稱只在自定義 ON 下顯示 -->
+              <button id="btnTogglePointLabels" type="button" class="primary" data-custom>🏷️ 點位名稱：ON</button>
+              <button id="btnToggleCustom" type="button" class="primary">🧩 自定義模式</button>
+            </div>
+
+            <div class="qa-sep"></div>
+
+            <div class="qa-sub">
+              <button id="btnFocusMode" type="button" class="primary">🎯 聚焦：OFF</button>
+              <button id="btnViewReset" type="button">🧭 重置視角</button>
+            </div>
+
+            <div class="qa-sub">
+              <!-- ✅ 名稱顯示選單只在自定義 ON 下顯示 -->
+              <div id="labelModeWrap" class="qa-control" data-custom>
+                <span style="opacity:.9; font-weight:650;">名稱顯示</span>
+                <select id="labelModeSelect">
+                  <option value="matched">只顯示查詢結果</option>
+                  <option value="all">顯示所有點位</option>
+                </select>
+              </div>
+
+              <button id="btnSortMaps" type="button">🔖 地圖排序</button>
+            </div>
+          </div>
+
+          <details id="foldTopButtons" class="fold" data-fold-key="top_buttons">
+            <summary>🧰 更多功能</summary>
+            <div class="fold-body">
+              <details class="fold" data-fold-key="mini_data">
+                <summary>💾 資料</summary>
+                <div class="fold-body">
+                  <div class="tool-grid" style="display:grid; gap:8px;">
+                    <button id="btnExport" type="button">⬇️ 匯出資料</button>
+                    <button id="btnImport" type="button">⬆️ 導入資料</button>
+                    <button id="btnResetAllStates" type="button">🔄 全部點位狀態重置（#0）</button>
+                    <button class="danger" id="btnClearAll" type="button">🧹 清空所有資料</button>
+                  </div>
+                </div>
+              </details>
+
+              <details class="fold" data-fold-key="mini_custom" data-custom>
+                <summary>🛠️ 自定義</summary>
+                <div class="fold-body">
+                  <div class="tool-grid" style="display:grid; gap:8px;">
+                    <button id="btnCustomToggleAddMarker" type="button">📍 新增點位</button>
+                    <button id="btnCustomToggleDeleteMarker" type="button">🗑️ 刪除點位</button>
+                    <button id="btnCustomToggleNameMarker" type="button">🏷️ 點位命名</button>
+
+                    <button id="btnDeleteMarkersCurrent" type="button">🧹 清空本地圖點位</button>
+                    <button class="danger" id="btnDeleteAllMarkers" type="button">💥 刪除所有點位</button>
+
+                    <button id="btnAddMap" type="button">🖼️ 新增地圖</button>
+                    <button class="danger" id="btnDeleteMap" type="button">🧨 刪除地圖</button>
+                    <button id="btnReplaceMapImage" type="button">🔁 重新上傳此地圖圖片</button>
+                  </div>
+                </div>
+              </details>
+
+              <div class="muted" style="margin-top:8px;">
+                <b>提示：</b>點點位不會造成畫面跳動（聚焦只會變暗其他點位，不會置中/縮放）。
+              </div>
+            </div>
+          </details>
+        </div>
+      </div>
+    </div>
+
+    <!-- ✅ Map -->
+    <div id="mapContainer">
+      <div id="mapStage">
+        <img id="mapImg" alt="map" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ 命名 HUD -->
+  <div id="namingSheet" aria-live="polite">
+    <div class="naming-hud" role="dialog" aria-label="點位命名模式">
+      <div class="naming-hud-bar">
+        <div class="naming-hud-title">
+          <div style="font-size:18px; line-height:1;">🏷️</div>
+          <div style="min-width:0;">
+            <div class="t">點位命名</div>
+            <div class="d" id="namingDesc">—</div>
+          </div>
+        </div>
+
+        <div class="naming-hud-actions">
+          <button id="btnNamingCollapse" type="button" title="收合/展開">▾</button>
+          <button id="btnNamingClearSel" type="button" class="danger" title="清空選取">清空</button>
+          <button id="btnNamingDone" type="button" class="primary" title="完成並保存">保存</button>
+          <button id="btnNamingCancel" type="button" class="danger" title="取消（不保存）">取消</button>
+        </div>
+      </div>
+
+      <div class="naming-hud-body">
+        <div class="naming-row-primary">
+          <input id="namingInput" type="text" placeholder="輸入點位名稱（可重複）" />
+          <button id="btnNamingApply" type="button" class="primary">套用</button>
+        </div>
+
+        <div class="naming-row-tools naming-adv">
+          <button id="btnNamingClearName" type="button" class="danger">清空名稱</button>
+          <button id="btnNamingApplyNumbered" type="button" title="以目前輸入作為前綴，依選取順序自動加上 -1/-2…">批次編號</button>
+
+          <div class="naming-steps">
+            <div class="step on" id="stepPick"><b>①</b>選</div>
+            <div class="step" id="stepType"><b>②</b>輸入</div>
+            <div class="step" id="stepApply"><b>③</b>套用</div>
+            <div class="step" title="桌機：Shift + 點 = 連續選取">⌨️Shift</div>
+          </div>
+        </div>
+
+        <details class="naming-fold naming-adv" open>
+          <summary>
+            <span>已選點位 / 選取工具</span>
+            <span class="muted" style="font-size:12px;">（點開/收起）</span>
+          </summary>
+          <div class="naming-fold-body">
+            <div class="row" style="margin:0;">
+              <button id="btnNamingSelectAll" type="button">全選本地圖</button>
+              <button id="btnNamingSelectUnnamed" type="button">只選未命名</button>
+              <button id="btnNamingSelectNamed" type="button">只選已命名</button>
+              <button id="btnNamingInvertSel" type="button">反選</button>
+            </div>
+
+            <div class="selected-list" id="namingMini"></div>
+
+            <div class="muted" style="margin-top:2px;">
+              小技巧：選取後按 <b>Enter</b> 套用；桌機可用 <b>Shift</b> 連續選取。
+            </div>
+          </div>
+        </details>
+
+        <details class="naming-fold naming-adv">
+          <summary>
+            <span>常用名稱</span>
+            <span class="muted" style="font-size:12px;">（點一下快速填入）</span>
+          </summary>
+          <div class="naming-fold-body">
+            <div class="chips" id="recentNameChips"></div>
+          </div>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <input id="fileMap" type="file" accept="image/*" style="display:none" />
+  <input id="fileImport" type="file" accept="application/json,.json" style="display:none" />
+
+  <!-- 地圖排序 Modal -->
+  <div id="sortModal" class="modal" hidden aria-hidden="true">
+    <div class="sort-panel" role="dialog" aria-modal="true" aria-label="調整地圖順序">
+      <div class="sort-head">
+        <div>
+          <div class="sort-title">🔖 拖曳調整地圖順序</div>
+          <div class="sort-sub">會影響「地圖下拉」與「左側統計」的順序，不會影響任何點位。</div>
+        </div>
+      </div>
+      <ul id="sortList"></ul>
+      <div class="sort-foot">
+        <button id="btnSortCancel" type="button" class="danger">取消</button>
+        <button id="btnSortDone" type="button" class="primary">完成</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 查詢魔靈 Dialog -->
+  <dialog id="spiritDialog" class="spirit-dialog">
+    <div class="spirit-head">
+      <div>
+        <div class="spirit-title">🔎 查詢魔靈</div>
+        <div class="spirit-sub" id="spiritSubText">勾選名稱可在地圖上高亮符合點位，左側資訊欄會顯示結果。</div>
+      </div>
+      <div class="spirit-head-actions">
+        <button type="button" class="rule-close" id="btnCloseSpirits">✕</button>
+      </div>
+    </div>
+
+    <div class="spirit-body grid2">
+      <section class="card">
+        <h3>魔靈名稱</h3>
+
+        <div class="row">
+          <input id="spiritSearch" type="text" placeholder="搜尋名稱…" />
+          <button id="btnSpiritsSelectAll" type="button">全選</button>
+          <button id="btnSpiritsClear" type="button" class="danger">清空</button>
+          <button id="btnOpenSpiritSort" type="button">🔖 排列順序</button>
+        </div>
+
+        <div id="spiritList" class="list"></div>
+
+        <div class="muted" style="margin-top:10px;">
+          提示：可多選；會把「所有地圖」符合的點位一起統計。<br>
+          <b>注意：</b>本視窗內的勾選/目標切換，必須按「完成」才會套用。
+        </div>
+
+        <div class="row custom-only" style="margin-top:10px;">
+          <button id="btnSpiritAdd" type="button" class="primary">＋ 新增魔靈</button>
+          <button id="btnStartAnnotate" type="button" class="primary">🧩 魔靈點位註記</button>
+          <span id="spiritPickBadge" class="kbadge" style="display:none;">🎯 目標：—</span>
+        </div>
+
+        <div class="muted custom-only" style="margin-top:8px;">
+          使用方法：先在右側「魔靈管理」選一個「註記目標」，再按「魔靈點位註記」。<br>
+          （已取消奇跡/銳意/閃亮形態，現在只有單一魔靈註記）
+        </div>
+      </section>
+
+      <section class="card">
+        <h3>資訊欄</h3>
+        <div id="spiritInfoBox" class="muted"></div>
+
+        <div data-custom>
+          <div class="panel-sep"></div>
+          <h3>魔靈管理</h3>
+          <div class="muted" id="manageHintText">在此可改名、刪除、指定「註記目標」。</div>
+
+          <div class="row" style="margin-top:8px;">
+            <button id="btnManageSelectAll" type="button">全選</button>
+            <button id="btnManageClear" type="button" class="danger">清空</button>
+            <button id="btnManageBulkDelete" type="button" class="danger">刪除</button>
+            <button id="btnOpenPairing" type="button" class="primary">🔗 點位配對（註記）</button>
+            <span id="manageSelectedBadge" class="kbadge">已選：0</span>
+          </div>
+
+          <div class="muted" style="margin-top:8px;">
+            點位配對用途：把「本地圖」已命名的點位，一鍵套用到選定魔靈。<br>
+            若配錯，也可在配對視窗內「取消配對點位」。
+          </div>
+
+          <div id="spiritManageList" class="list"></div>
+        </div>
+      </section>
+    </div>
+
+    <div class="spirit-foot">
+      <button id="btnSpiritsDone" type="button" class="primary">完成</button>
+    </div>
+  </dialog>
+
+  <!-- 魔靈排序 Modal -->
+  <div id="spiritSortModal" class="modal" hidden aria-hidden="true">
+    <div class="sort-panel" role="dialog" aria-modal="true" aria-label="調整魔靈順序">
+      <div class="sort-head">
+        <div>
+          <div class="sort-title">🔖 拖曳調整魔靈名稱順序</div>
+          <div class="sort-sub">會影響「查詢魔靈」清單順序；不影響任何點位與狀態。</div>
+        </div>
+      </div>
+      <ul id="spiritSortList"></ul>
+      <div class="sort-foot">
+        <button id="btnSpiritSortCancel" type="button" class="danger">取消</button>
+        <button id="btnSpiritSortDone" type="button" class="primary">完成</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 點位配對 Modal（已移除形態選擇） -->
+  <div id="pairModal" class="modal" hidden aria-hidden="true">
+    <div class="pair-panel" role="dialog" aria-modal="true" aria-label="點位配對（註記）">
+      <div class="sort-head" style="margin-bottom:0;">
+        <div>
+          <div class="sort-title">🔗 點位配對（註記）</div>
+          <div class="sort-sub" id="pairSub">把「本地圖」已命名點位，一鍵配對到指定魔靈。</div>
+          <div class="pair-step" id="pairStep">
+            步驟：①選魔靈 → ②勾選點位名稱（可多選） → ③按「配對」或「取消配對」
+          </div>
+        </div>
+      </div>
+
+      <div class="pair-grid">
+        <div class="card" style="margin:0;">
+          <h3>① 魔靈</h3>
+          <div class="row" style="margin-top:8px;">
+            <label class="muted" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              魔靈：
+              <select id="pairSpiritSelect"></select>
+            </label>
+          </div>
+          <div class="panel-sep"></div>
+          <div id="pairPreview" class="muted"></div>
+        </div>
+
+        <div class="card" style="margin:0;">
+          <h3>② 點位名稱（本地圖）</h3>
+          <div class="row" style="margin-top:8px;">
+            <input id="pairNameSearch" type="text" placeholder="搜尋點位名稱…" />
+            <button id="btnPairSelectAllNames" type="button">全選</button>
+            <button id="btnPairClearNames" type="button" class="danger">清空</button>
+          </div>
+          <div class="pair-list" id="pairNameList"></div>
+          <div class="muted" style="margin-top:8px;">
+            只會列出「已命名」的點位名稱。若清單為空，請先用「🏷️ 點位命名」幫點位命名。
+          </div>
+        </div>
+      </div>
+
+      <div class="pair-foot">
+        <button id="btnPairUnpair" type="button" class="danger">取消配對點位</button>
+        <button id="btnPairApply" type="button" class="primary">配對（新增註記）</button>
+        <button id="btnPairClose" type="button">返回查詢魔靈</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ 清空資料 Modal -->
+  <div id="clearModal" class="modal" hidden aria-hidden="true">
+    <div class="sort-panel" role="dialog" aria-modal="true" aria-label="清空所有資料">
+      <div class="sort-head">
+        <div>
+          <div class="sort-title">🧹 清空資料（可自由勾選）</div>
+          <div class="sort-sub">你可以只清空部分資料；若只想重置操作習慣，請勾選「工具設定（初始設定）」即可。</div>
+        </div>
+      </div>
+
+      <div id="clearOptions" style="overflow:auto; max-height:min(58vh, 520px); padding-right:4px; display:grid; gap:8px;">
+        <div class="rowline">
+          <label class="chk" style="flex:0 0 auto; gap:10px;"><input type="checkbox" id="c_maps" /></label>
+          <div>
+            <b>地圖清單（maps）</b>
+            <div class="muted">重置為預設地圖，移除自定義地圖；並清理不存在地圖的點位。</div>
+          </div>
+        </div>
+
+        <div class="rowline">
+          <label class="chk" style="flex:0 0 auto; gap:10px;"><input type="checkbox" id="c_markers" /></label>
+          <div>
+            <b>所有點位（markers）</b>
+            <div class="muted">刪除全部點位（含狀態/命名/註記）。</div>
+          </div>
+        </div>
+
+        <div class="rowline">
+          <label class="chk" style="flex:0 0 auto; gap:10px;"><input type="checkbox" id="c_states" /></label>
+          <div>
+            <b>點位狀態（state）</b>
+            <div class="muted">把所有點位狀態重置為 #0（不刪點位）。</div>
+          </div>
+        </div>
+
+        <div class="rowline">
+          <label class="chk" style="flex:0 0 auto; gap:10px;"><input type="checkbox" id="c_pointNames" /></label>
+          <div>
+            <b>點位名稱（pointName）</b>
+            <div class="muted">清空所有點位命名（不刪點位）。</div>
+          </div>
+        </div>
+
+        <div class="rowline">
+          <label class="chk" style="flex:0 0 auto; gap:10px;"><input type="checkbox" id="c_spiritsList" /></label>
+          <div>
+            <b>魔靈清單（spirits）</b>
+            <div class="muted">回到示範魔靈；並清理已不存在魔靈的註記。</div>
+          </div>
+        </div>
+
+        <div class="rowline">
+          <label class="chk" style="flex:0 0 auto; gap:10px;"><input type="checkbox" id="c_notesAll" /></label>
+          <div>
+            <b>所有註記點</b>
+            <div class="muted">清空所有點位上的魔靈註記（不影響魔靈清單）。</div>
+          </div>
+        </div>
+
+        <div class="rowline">
+          <label class="chk" style="flex:0 0 auto; gap:10px;"><input type="checkbox" id="c_query" /></label>
+          <div>
+            <b>查詢/聚焦勾選狀態</b>
+            <div class="muted">清空目前已套用的查詢勾選、註記目標、面板暫存狀態。</div>
+          </div>
+        </div>
+
+        <div class="rowline">
+          <label class="chk" style="flex:0 0 auto; gap:10px;"><input type="checkbox" id="c_prefs" /></label>
+          <div>
+            <b>工具設定（初始設定）</b>
+            <div class="muted">重置：自定義模式、聚焦、點位名稱顯示、視角、收納開合狀態、左右面板收起狀態等。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sort-foot">
+        <button id="btnClearPickAll" type="button">全選</button>
+        <button id="btnClearPickNone" type="button" class="danger">清空勾選</button>
+        <button id="btnClearApply" type="button" class="primary">清空選取項目</button>
+        <button id="btnClearInitAll" type="button" class="danger">初始化（全部清空）</button>
+        <button id="btnClearClose" type="button">取消</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+
+</body>
+</html>
